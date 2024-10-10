@@ -36,7 +36,7 @@ func (w *Watcher) Start() error {
 		for {
 			select {
 			case <-w.inCh:
-				w.counter.Iteration += 1
+				w.counter.Iteration += 1 //this is where it sets it to 1?
 				select {
 				case w.outCh <- w.counter:
 				case <-w.quitChannel:
