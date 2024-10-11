@@ -41,16 +41,16 @@ func (s *Server) Start() error {
 	// Create router.
 	r := mux.NewRouter()
 
-	//Add csrf
+	//Add csrf middleware
 	CSRF := csrf.Protect([]byte("32-byte-long-auth-key"))
 	// Register routes.
 	for _, route := range s.myRoutes() {
 		if route.Method == "ANY" {
-			r.Handle(route.Pattern, route.HFunc)
+			r.Handle(route.Pattern, CSRF(route.HFunc)) //Add csrf for each route
 		} else {
-			r.Handle(route.Pattern, route.HFunc).Methods(route.Method)
+			r.Handle(route.Pattern, CSRF(route.HFunc)).Methods(route.Method) //Add csrf for each route
 			if route.Queries != nil {
-				r.Handle(route.Pattern, route.HFunc).Methods(route.Method).Queries(route.Queries...)
+				r.Handle(route.Pattern, CSRF(route.HFunc)).Methods(route.Method).Queries(route.Queries...) //Add csrf for each route
 			}
 		}
 	}
