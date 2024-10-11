@@ -38,7 +38,7 @@ func (s *StringGenerator) mainLoop() {
 
 	for {
 		select {
-		case s.strChan <- util.RandString(10):
+		case s.strChan <- util.RandHex(10):
 		case <-s.quitChannel:
 			return
 		default:

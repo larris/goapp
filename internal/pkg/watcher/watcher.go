@@ -21,7 +21,7 @@ func New() *Watcher {
 	w.id = uuid.NewString()
 	w.inCh = make(chan string, 1)
 	w.outCh = make(chan *Counter, 1)
-	w.counter = &Counter{Iteration: 0}
+	w.counter = &Counter{Iteration: 0, Value: ""}
 	w.counterLock = &sync.RWMutex{}
 	w.quitChannel = make(chan struct{})
 	w.running = sync.WaitGroup{}
@@ -35,8 +35,9 @@ func (w *Watcher) Start() error {
 		defer wg.Done()
 		for {
 			select {
-			case <-w.inCh:
-				w.counter.Iteration += 1 //this is where it sets it to 1?
+			case str := <-w.inCh: // Changed to Receive and store the string from StringGenerator and update the counter and value
+				w.counter.Iteration += 1
+				w.counter.Value = str
 				select {
 				case w.outCh <- w.counter:
 				case <-w.quitChannel:
@@ -70,6 +71,7 @@ func (w *Watcher) ResetCounter() {
 	defer w.counterLock.Unlock()
 
 	w.counter.Iteration = 0
+	w.counter.Value = ""
 
 	select {
 	case w.outCh <- w.counter:
