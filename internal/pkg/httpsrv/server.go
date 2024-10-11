@@ -2,7 +2,6 @@ package httpsrv
 
 import (
 	"context"
-	"github.com/gorilla/csrf"
 	"log"
 	"net/http"
 	"os"
@@ -41,8 +40,6 @@ func (s *Server) Start() error {
 	// Create router.
 	r := mux.NewRouter()
 
-	//Add csrf
-	CSRF := csrf.Protect([]byte("32-byte-long-auth-key"))
 	// Register routes.
 	for _, route := range s.myRoutes() {
 		if route.Method == "ANY" {
