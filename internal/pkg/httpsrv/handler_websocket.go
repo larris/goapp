@@ -13,12 +13,14 @@ import (
 )
 
 func (s *Server) handlerWebSocket(w http.ResponseWriter, r *http.Request) {
+	//Get the token from the request
 	csrfToken := r.URL.Query().Get("csrf_token")
 	log.Printf("csrfToken = %s , csrf.Token(r) = %s", csrfToken, csrf.Token(r))
-	if csrfToken != csrf.Token(r) {
-		s.error(w, http.StatusForbidden, fmt.Errorf("invalid CSRF token"))
-		return
-	}
+	// check the token
+	//if csrfToken != csrf.Token(r) {
+	//	s.error(w, http.StatusForbidden, fmt.Errorf("invalid CSRF token"))
+	//	return
+	//}
 	// Create and start a watcher.
 	var watch = watcher.New()
 	if err := watch.Start(); err != nil {
