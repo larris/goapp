@@ -3,6 +3,7 @@ package httpsrv
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/gorilla/csrf"
 	"log"
 	"net/http"
 
@@ -60,6 +61,21 @@ func (s *Server) handlerWebSocket(w http.ResponseWriter, r *http.Request) {
 						log.Printf("failed to read message: %v\n", err)
 					}
 					return
+				}
+				//get the csrf token and validate it
+				var data struct {
+					Message   string `json:"message"`
+					CSRFToken string `json:"csrfToken"`
+				}
+				if err := json.Unmarshal(p, &data); err != nil {
+					log.Printf("failed to unmarshal message: %v\n", err)
+					continue
+				}
+
+				//validate csrf  token
+				if !(data.CSRFToken == csrf.Token(r)) {
+					log.Printf("invalid CSRF token")
+					continue
 				}
 				var m watcher.CounterReset
 				if err := json.Unmarshal(p, &m); err != nil {

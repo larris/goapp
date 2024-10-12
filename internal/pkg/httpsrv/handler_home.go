@@ -1,11 +1,15 @@
 package httpsrv
 
 import (
+	"github.com/gorilla/csrf"
 	"html/template"
 	"net/http"
 )
 
 func (s *Server) handlerHome(w http.ResponseWriter, r *http.Request) {
+	// Get the CSRF token from the request.
+	csrfToken := csrf.Token(r)
+
 	template.Must(template.New("").Parse(`
 <!DOCTYPE html>
 <html>
@@ -15,6 +19,7 @@ func (s *Server) handlerHome(w http.ResponseWriter, r *http.Request) {
 window.addEventListener("load", function(evt) {
     var output = document.getElementById("output");
     var input = document.getElementById("input");
+	var csrfToken = "{{.CSRFToken}}"; // CSRF Token 
     var ws;
     var print = function(message) {
         var d = document.createElement("div");
@@ -47,7 +52,11 @@ window.addEventListener("load", function(evt) {
             return false;
         }
         print("SEND: " + input.value);
-        ws.send(input.value);
+        // Send the CSRF token along with the message
+        ws.send(JSON.stringify({
+            message: input.value,
+            csrfToken: csrfToken
+        }));
         return false;
     };
     document.getElementById("close").onclick = function(evt) {
@@ -78,5 +87,8 @@ You can change the message and send multiple times.
 </td></tr></table>
 </body>
 </html>
-`)).Execute(w, "ws://"+r.Host+"/goapp/ws")
+`)).Execute(w, map[string]string{ //map to handle both csrf token and the url
+		"CSRFToken":    csrfToken,
+		"WebSocketURL": "ws://" + r.Host + "/goapp/ws",
+	})
 }

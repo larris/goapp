@@ -42,7 +42,10 @@ func (s *Server) Start() error {
 	r := mux.NewRouter()
 
 	//Add csrf middleware
-	CSRF := csrf.Protect([]byte("32-byte-long-auth-key"))
+	CSRF := csrf.Protect(
+		[]byte("32-byte-long-auth-key"),
+		csrf.Secure(false), //for development only
+	)
 	// Register routes.
 	for _, route := range s.myRoutes() {
 		if route.Method == "ANY" {
