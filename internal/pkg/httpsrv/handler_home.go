@@ -7,7 +7,6 @@ import (
 )
 
 func (s *Server) handlerHome(w http.ResponseWriter, r *http.Request) {
-	// Get the CSRF token from the request.
 	csrfToken := csrf.Token(r)
 
 	template.Must(template.New("").Parse(`
@@ -19,7 +18,6 @@ func (s *Server) handlerHome(w http.ResponseWriter, r *http.Request) {
 window.addEventListener("load", function(evt) {
     var output = document.getElementById("output");
     var input = document.getElementById("input");
-	var csrfToken = "{{.CSRFToken}}"; // CSRF Token 
     var ws;
     var print = function(message) {
         var d = document.createElement("div");
@@ -31,7 +29,7 @@ window.addEventListener("load", function(evt) {
         if (ws) {
             return false;
         }
-        ws = new WebSocket("{{.}}");
+	    ws = new WebSocket("{{.}}?csrf_token=`+csrfToken+`");
         ws.onopen = function(evt) {
             print("OPEN");
         }
@@ -52,11 +50,7 @@ window.addEventListener("load", function(evt) {
             return false;
         }
         print("SEND: " + input.value);
-        // Send the CSRF token along with the message
-        ws.send(JSON.stringify({
-            message: input.value,
-            csrfToken: csrfToken
-        }));
+        ws.send(input.value);
         return false;
     };
     document.getElementById("close").onclick = function(evt) {
@@ -87,8 +81,5 @@ You can change the message and send multiple times.
 </td></tr></table>
 </body>
 </html>
-`)).Execute(w, map[string]string{ //map to handle both csrf token and the url
-		"CSRFToken":    csrfToken,
-		"WebSocketURL": "ws://" + r.Host + "/goapp/ws",
-	})
+`)).Execute(w, "ws://"+r.Host+"/goapp/ws")
 }
