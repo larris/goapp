@@ -31,3 +31,15 @@ func RandString(n int) string {
 
 	return string(b)
 }
+
+func RandHex(n int) string {
+	const hexvalues = "0123456789abcdef"
+	// Use the randx  variable as the source
+	r := rand.New(randx)
+
+	b := make([]byte, n)
+	for i := 0; i < n; i++ {
+		b[i] = hexvalues[r.Intn(len(hexvalues))]
+	}
+	return string(b)
+}
