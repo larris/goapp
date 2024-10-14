@@ -25,7 +25,6 @@ type Server struct {
 	quitChannel  chan struct{}                     // Quit channel.
 	running      sync.WaitGroup                    // Running goroutines.
 	conn         map[*websocket.Conn]*sessionStats //map to keep the connections
-	connLock     *sync.RWMutex
 }
 
 func New(strChan <-chan string) *Server {

@@ -47,14 +47,7 @@ func (s *Server) handlerWebSocket(w http.ResponseWriter, r *http.Request) {
 	defer func() { _ = c.Close() }()
 
 	connID := len(s.conn)
-	s.connLock.Lock()
 	s.conn[c] = &sessionStats{} //add the WS connection
-	s.connLock.Unlock()
-	defer func() {
-		s.connLock.Lock()
-		delete(s.conn, c)
-		s.connLock.Unlock()
-	}()
 
 	log.Printf("websocket started for watcher %s\n", watch.GetWatcherId())
 	defer func() {
