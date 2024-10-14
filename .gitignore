@@ -55,8 +55,6 @@ Thumbs.db
 *.*_*
 *.pem
 *.key
-*.bin
 *_auth.json
 /private
 *.code-workspace
-bin/*
