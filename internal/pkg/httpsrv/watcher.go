@@ -8,6 +8,8 @@ func (s *Server) addWatcher(w *watcher.Watcher) {
 	s.watchersLock.Lock()
 	defer s.watchersLock.Unlock()
 	s.watchers[w.GetWatcherId()] = w
+	// Initialize session stats for this watcher.
+	s.sessionStats = append(s.sessionStats, &sessionStats{id: w.GetWatcherId(), sent: 0})
 }
 
 func (s *Server) removeWatcher(w *watcher.Watcher) {

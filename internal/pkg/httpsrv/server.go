@@ -3,6 +3,7 @@ package httpsrv
 import (
 	"context"
 	"github.com/gorilla/csrf"
+	"github.com/gorilla/websocket"
 	"log"
 	"net/http"
 	"os"
@@ -16,13 +17,15 @@ import (
 )
 
 type Server struct {
-	strChan      <-chan string               // String channel.
-	server       *http.Server                // Gorilla HTTP server.
-	watchers     map[string]*watcher.Watcher // Counter watchers (k: counterId).
-	watchersLock *sync.RWMutex               // Counter lock.
-	sessionStats []*sessionStats             // Session stats.
-	quitChannel  chan struct{}               // Quit channel.
-	running      sync.WaitGroup              // Running goroutines.
+	strChan      <-chan string                     // String channel.
+	server       *http.Server                      // Gorilla HTTP server.
+	watchers     map[string]*watcher.Watcher       // Counter watchers (k: counterId).
+	watchersLock *sync.RWMutex                     // Counter lock.
+	sessionStats []*sessionStats                   // Session stats.
+	quitChannel  chan struct{}                     // Quit channel.
+	running      sync.WaitGroup                    // Running goroutines.
+	conn         map[*websocket.Conn]*sessionStats //map to keep the connections
+	connLock     *sync.RWMutex
 }
 
 func New(strChan <-chan string) *Server {
@@ -34,6 +37,7 @@ func New(strChan <-chan string) *Server {
 	s.sessionStats = []*sessionStats{}
 	s.quitChannel = make(chan struct{})
 	s.running = sync.WaitGroup{}
+	s.conn = make(map[*websocket.Conn]*sessionStats)
 	return &s
 }
 

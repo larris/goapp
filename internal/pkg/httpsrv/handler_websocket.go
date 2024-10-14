@@ -46,6 +46,16 @@ func (s *Server) handlerWebSocket(w http.ResponseWriter, r *http.Request) {
 	}
 	defer func() { _ = c.Close() }()
 
+	connID := len(s.conn)
+	s.connLock.Lock()
+	s.conn[c] = &sessionStats{} //add the WS connection
+	s.connLock.Unlock()
+	defer func() {
+		s.connLock.Lock()
+		delete(s.conn, c)
+		s.connLock.Unlock()
+	}()
+
 	log.Printf("websocket started for watcher %s\n", watch.GetWatcherId())
 	defer func() {
 		log.Printf("websocket stopped for watcher %s\n", watch.GetWatcherId())
@@ -88,7 +98,8 @@ func (s *Server) handlerWebSocket(w http.ResponseWriter, r *http.Request) {
 		select {
 		case cv := <-watch.Recv():
 			data, _ := json.Marshal(cv)
-			err = c.WriteMessage(websocket.TextMessage, data)
+			msg := fmt.Sprintf("[conn #%d] value: %s", connID, string(data))
+			err = c.WriteMessage(websocket.TextMessage, []byte(msg))
 			if err != nil {
 				if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
 					log.Printf("failed to write message: %v\n", err)
