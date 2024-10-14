@@ -16,7 +16,7 @@ func (s *Server) handlerWebSocket(w http.ResponseWriter, r *http.Request) {
 	//Get the token from the request
 	csrfToken := r.URL.Query().Get("csrf_token")
 	log.Printf("csrfToken = %s , csrf.Token(r) = %s", csrfToken, csrf.Token(r))
-	// check the token
+	// check the token this doesnt work...
 	//if csrfToken != csrf.Token(r) {
 	//	s.error(w, http.StatusForbidden, fmt.Errorf("invalid CSRF token"))
 	//	return
@@ -47,7 +47,7 @@ func (s *Server) handlerWebSocket(w http.ResponseWriter, r *http.Request) {
 	defer func() { _ = c.Close() }()
 
 	connID := len(s.conn)
-	s.conn[c] = &sessionStats{} //add the WS connection
+	s.conn[c] = &sessionStats{} //add the WS connection to the conn map
 
 	log.Printf("websocket started for watcher %s\n", watch.GetWatcherId())
 	defer func() {
@@ -91,6 +91,7 @@ func (s *Server) handlerWebSocket(w http.ResponseWriter, r *http.Request) {
 		select {
 		case cv := <-watch.Recv():
 			data, _ := json.Marshal(cv)
+			//add the connectionid to the message
 			msg := fmt.Sprintf("[conn #%d] value: %s", connID, string(data))
 			err = c.WriteMessage(websocket.TextMessage, []byte(msg))
 			if err != nil {

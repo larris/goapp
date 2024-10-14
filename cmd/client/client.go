@@ -23,6 +23,7 @@ func main() {
 	// Channel to signal all goroutines to stop
 	done := make(chan struct{})
 
+	// loop through n connections
 	for i := 0; i < *numConn; i++ {
 		wg.Add(1)
 		go func(connId int) {
